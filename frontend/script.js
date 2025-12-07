@@ -1,7 +1,7 @@
 // Definir o URL do backend (alterar para o IP do servidor se necessário)
 const API_URL = window.API_URL || "http://192.168.1.123:8000";
 document.addEventListener("DOMContentLoaded", () => {
-const adicionarCasaBtn = document.getElementById("adicionar-casa");
+const adicionarCasaBtn = document.getElementById("add-casa");
 const sortearBtn = document.getElementById("sortear");
 const casasContainer = document.getElementById("casas");
 
