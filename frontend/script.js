@@ -1,16 +1,16 @@
 const API_URL = window.API_URL || "http://192.168.1.123:8000";
 
 document.addEventListener("DOMContentLoaded", () => {
-    const addAgregadoBtn = document.getElementById("add-agregado");
+    const adicionarCasaBtn = document.getElementById("adicionar-casa");
     const sortearBtn = document.getElementById("sortear");
 
-    addAgregadoBtn.addEventListener("click", adicionarAgregado);
-    sortearBtn.addEventListener("click", sortear);
+    adicionarCasaBtn.addEventListener("click", () => adicionarCasa());
+    sortearBtn.addEventListener("click", () => sortear());
 
-    adicionarAgregado();
+    adicionarCasa(); // inicializa com um agregado
 });
 
-function adicionarAgregado() {
+function adicionarCasa() {
     const casasContainer = document.getElementById("casas");
     if (!casasContainer) return;
 
@@ -25,51 +25,51 @@ function adicionarAgregado() {
     adicionarPessoaBtn.textContent = "Adicionar Pessoa";
     adicionarPessoaBtn.addEventListener("click", () => adicionarPessoa(pessoasContainer));
 
+    // Envolve botão para garantir layout
+    const btnWrapper = document.createElement("div");
+    btnWrapper.appendChild(adicionarPessoaBtn);
+
     casaDiv.appendChild(pessoasContainer);
-    casaDiv.appendChild(adicionarPessoaBtn);
+    casaDiv.appendChild(btnWrapper);
     casasContainer.appendChild(casaDiv);
 
     adicionarPessoa(pessoasContainer);
 }
 
 function adicionarPessoa(container) {
-    const inputNome = document.createElement("input");
-    inputNome.type = "text";
-    inputNome.placeholder = "Nome";
-    inputNome.classList.add("pessoa-nome");
-
-    const inputEmail = document.createElement("input");
-    inputEmail.type = "email";
-    inputEmail.placeholder = "Email";
-    inputEmail.classList.add("pessoa-email");
-
-    container.appendChild(inputNome);
-    container.appendChild(inputEmail);
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Nome ou Email";
+    input.classList.add("pessoa");
+    container.appendChild(input);
 }
 
 function coletarCasas() {
     const casasDivs = document.querySelectorAll(".casa");
     const casas = [];
-
     casasDivs.forEach(casaDiv => {
         const pessoas = [];
-        const nomes = casaDiv.querySelectorAll(".pessoa-nome");
-        const emails = casaDiv.querySelectorAll(".pessoa-email");
-        for (let i = 0; i < nomes.length; i++) {
-            const nome = nomes[i].value.trim();
-            const email = emails[i].value.trim();
-            if (nome && email) pessoas.push({nome, email});
-        }
-        if (pessoas.length) casas.push(pessoas);
+        casaDiv.querySelectorAll(".pessoa").forEach(input => {
+            const valor = input.value.trim();
+            if (valor) pessoas.push(valor);
+        });
+        if (pessoas.length > 0) casas.push(pessoas);
     });
-
     return casas;
+}
+
+function isEmail(str) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
 }
 
 async function sortear() {
     const casas = coletarCasas();
-    const nomeFamilia = document.getElementById("nome-familia").value.trim();
-    if (!nomeFamilia) { alert("Preenche o nome da família!"); return; }
+    const nomeFamilia = document.getElementById("nome-familia").value || "seu grupo";
+
+    if (casas.length === 0) {
+        alert("Adicione pelo menos uma pessoa antes de sortear.");
+        return;
+    }
 
     try {
         const resp = await fetch(`${API_URL}/sortear`, {
@@ -86,31 +86,38 @@ async function sortear() {
         const resultado = await resp.json();
         mostrarResultado(resultado);
 
-        // enviar emails
+        // Enviar email de amigo secreto
         for (const [quem, para] of Object.entries(resultado)) {
-            fetch(`${API_URL}/enviar_email`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    destinatario: quem.email,
-                    nome: quem.nome,
-                    grupo: nomeFamilia,
-                    amigo_secreto: para.nome
-                })
-            });
+            if (isEmail(quem)) {
+                fetch(`${API_URL}/enviar_email`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        destinatario: quem,
+                        assunto: `🎄 Amigo Secreto - ${nomeFamilia}`,
+                        conteudo: `Olá! 🎅\n\nFoste adicionado ao amigo secreto feito pelo ${nomeFamilia}.\nDeverás dar a prenda a: ${para} 🎁\n\nParticipa em mais grupos aqui: http://192.168.1.123:8080`
+                    })
+                });
+            }
         }
-    } catch(e) {
-        alert("Erro: " + e.message);
+
+    } catch (e) {
+        alert("Erro ao contactar o servidor: " + e.message);
     }
 }
 
 function mostrarResultado(resultado) {
     const resDiv = document.getElementById("resultado");
     if (!resDiv) return;
-    resDiv.innerHTML = "<h2>🎅 Resultado do Amigo Secreto 🎁</h2>";
+    resDiv.innerHTML = "";
+
+    const titulo = document.createElement("h2");
+    titulo.textContent = "🎅 Resultado do Amigo Secreto 🎁";
+    resDiv.appendChild(titulo);
+
     for (const [quem, para] of Object.entries(resultado)) {
         const p = document.createElement("p");
-        p.innerHTML = `<strong>${quem.nome}</strong> → ${para.nome}`;
+        p.innerHTML = `<strong>${quem}</strong> → ${para}`;
         resDiv.appendChild(p);
     }
 }
