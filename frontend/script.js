@@ -38,7 +38,7 @@ document.getElementById("sortear").addEventListener("click", async () => {
     }
 
     try {
-        const resp = await fetch("http://backend:8000/api/sortear", {
+        const resp = await fetch("/api/sortear", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ casas })
