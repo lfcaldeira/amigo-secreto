@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+import random
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -23,27 +24,29 @@ class Casas(BaseModel):
 
 @app.post("/sortear")
 def sortear(casas: Casas):
-    import random
-
-    # Cria pares, evitando membros da mesma casa
     todos = [p for casa in casas.casas for p in casa]
-    result = {}
-    tentativas = 0
-    max_tentativas = 1000
-    while tentativas < max_tentativas:
-        tentativas += 1
-        shuffled = todos[:]
-        random.shuffle(shuffled)
-        result.clear()
-        valido = True
-        for i, casa in enumerate(casas.casas):
-            for pessoa in casa:
-                if shuffled[i] in casa:
-                    valido = False
-                    break
-                result[pessoa] = shuffled[i]
-            if not valido:
-                break
-        if valido:
-            break
-    return result
+
+    # Mapeia cada pessoa à sua casa
+    pessoa_para_casa = {p: casa for casa in casas.casas for p in casa}
+
+    def gerar_sorteio():
+        destinatarios_disponiveis = set(todos)
+        resultado = {}
+
+        for pessoa in todos:
+            validos = [d for d in destinatarios_disponiveis if d not in pessoa_para_casa[pessoa]]
+            if not validos:
+                return None  # backtrack, falha
+            escolha = random.choice(validos)
+            resultado[pessoa] = escolha
+            destinatarios_disponiveis.remove(escolha)
+
+        return resultado
+
+    # Tenta gerar até conseguir
+    for _ in range(1000):
+        sorteio = gerar_sorteio()
+        if sorteio:
+            return sorteio
+
+    return {"error": "Não foi possível gerar um sorteio válido."}
