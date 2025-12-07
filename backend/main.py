@@ -47,6 +47,12 @@ def sortear(casas: Casas):
     for _ in range(1000):
         sorteio = gerar_sorteio()
         if sorteio:
+            for remetente, destinatario in sorteio.items():
+                # aqui podes usar remetente como nome ou email real
+                enviar_email(destinatario=remetente, 
+                             assunto="Amigo Secreto", 
+                             conteudo=f"Recebeste para oferecer a: {destinatario}")
+
             return sorteio
 
     return {"error": "Não foi possível gerar um sorteio válido."}
