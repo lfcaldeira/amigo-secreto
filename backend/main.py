@@ -105,11 +105,13 @@ def gerar_email_html(nome_pessoa: str, amigo_secreto: str, familia: str) -> str:
 
 # Endpoint do sorteio
 @app.post("/sortear")
-def sortear(casas: Casas, familia: str):
-    todos = [p for casa in casas.casas for p in casa]
+def sortear(request: SorteioRequest):
+    familia = request.familia
+    casas = request.casas
 
-    # Mapeia cada pessoa à sua casa
-    pessoa_para_casa = {p.email: [x.email for x in casa] for casa in casas.casas for p in casa}
+    todos = [p for casa in casas for p in casa]
+
+    pessoa_para_casa = {p.email: [x.email for x in casa] for casa in casas for p in casa}
 
     def gerar_sorteio():
         destinatarios_disponiveis = set(p.email for p in todos)
@@ -128,7 +130,6 @@ def sortear(casas: Casas, familia: str):
     for _ in range(1000):
         sorteio = gerar_sorteio()
         if sorteio:
-            # Envia emails
             for pessoa_obj, amigo_nome in sorteio.items():
                 html_email = gerar_email_html(pessoa_obj.nome, amigo_nome, familia)
                 enviar_email(destinatario=pessoa_obj.email, assunto="O teu Amigo Secreto 🎄", conteudo=html_email)
