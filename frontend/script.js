@@ -1,7 +1,7 @@
 const API_URL = window.API_URL || "[http://192.168.1.123:8000](http://192.168.1.123:8000)"; // IP do servidor Docker
 
 document.addEventListener("DOMContentLoaded", () => {
-const adicionarCasaBtn = document.getElementById("adicionar-casa");
+const adicionarCasaBtn = document.getElementById("add-casa");
 const sortearBtn = document.getElementById("sortear");
 
 
