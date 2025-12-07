@@ -3,15 +3,19 @@ version: "3.9"
 services:
   backend:
     build: ./backend
-    environment:
-      SENDGRID_API_KEY: "${SENDGRID_API_KEY}"
-      FROM_EMAIL: "${FROM_EMAIL}"
     ports:
-      - "3000:3000"
+      - "8000:8000"
+    networks:
+      - net
 
   frontend:
-    build: ./frontend
+    image: nginx:alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
     ports:
       - "8080:80"
-    depends_on:
-      - backend
+    networks:
+      - net
+
+networks:
+  net:

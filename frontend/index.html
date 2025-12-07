@@ -1,22 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <title>Amigo Secreto</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <title>Amigo Secreto - Casas</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Amigo Secreto - Bloqueios Visuais</h1>
+<h1>Amigo Secreto</h1>
 
-<div id="controls">
-  <input id="nameInput" placeholder="Adicionar pessoa...">
-  <button onclick="addPerson()">Adicionar</button>
-  <button onclick="drawSecret()">Sortear</button>
-</div>
+<div id="casas"></div>
 
-<canvas id="canvas"></canvas>
+<button id="addCasa">+ Nova Casa</button>
+<button id="sortear">Sortear</button>
 
-<script src="app.js"></script>
+<h2>Resultado</h2>
+<pre id="resultado"></pre>
+<div id="avisos"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
