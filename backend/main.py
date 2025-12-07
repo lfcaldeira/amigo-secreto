@@ -33,7 +33,7 @@ class Casas(BaseModel):
 class SorteioRequest(BaseModel):
     familia: str
     casas: List[List[Pessoa]]
-    
+
 # Função para enviar email
 def enviar_email(destinatario: str, assunto: str, conteudo: str):
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
@@ -126,7 +126,7 @@ def sortear(request: SorteioRequest):
             if not validos:
                 return None
             escolha = random.choice(validos)
-            resultado[pessoa] = next(p.nome for p in todos if p.email == escolha)
+            resultado[pessoa] = resultado[pessoa.email] = next(p.nome for p in todos if p.email == escolha)
             destinatarios_disponiveis.remove(escolha)
 
         return resultado
