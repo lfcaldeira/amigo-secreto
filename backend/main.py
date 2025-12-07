@@ -101,6 +101,8 @@ def gerar_email_html(nome_pessoa: str, amigo_secreto: str, familia: str) -> str:
             <p>Foste selecionado para o amigo secreto da família <strong>{familia}</strong>.</p>
             <p>O teu amigo secreto é: <strong>{amigo_secreto}</strong> 🎁</p>
             <p class="emoji">✨🎅🎁🎄✨</p>
+            <p>Queres partilhar a diversão com alguém? Visita o site e cria o teu próprio sorteio:
+https://teusite.com/amigo-secreto</p>
             <p class="footer">Este é um email automático, não é necessário responder.</p>
         </div>
     </body>
