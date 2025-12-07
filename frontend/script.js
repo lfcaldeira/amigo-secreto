@@ -83,7 +83,7 @@ async function sortear() {
         const resp = await fetch(`${API_URL}/sortear`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ casas })
+            body: JSON.stringify({ casas, familia })
         });
 
         if (!resp.ok) throw new Error("Erro ao contactar o servidor");
