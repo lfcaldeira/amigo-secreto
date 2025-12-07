@@ -1,53 +1,48 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import random
-import re
 
 app = FastAPI()
 
-class CasasInput(BaseModel):
-    casas: list[list[str]]
+class PessoaCasa(BaseModel):
+    nome: str
+    pessoas: list[str]
 
-def is_email(s):
-    return "@" in s and "." in s
+class Casas(BaseModel):
+    __root__: list[PessoaCasa]
 
-def is_phone(s):
-    return re.match(r"^(\+351)?9\d{8}$", s)
 
 @app.post("/api/sortear")
-def sortear(data: CasasInput):
-    casas = data.casas
+def sortear(casas: list[PessoaCasa]):
+    # junta todas as pessoas
+    pessoas = []
+    for casa in casas:
+        for p in casa.pessoas:
+            if p.strip() != "":
+                pessoas.append(p.strip())
 
-    pessoas = [p for casa in casas for p in casa]
-    proibidos = {p: set(casa) - {p} for casa in casas for p in casa}
+    if len(pessoas) < 2:
+        return {"mensagem": "É preciso pelo menos 2 pessoas."}
 
-    for tentativa in range(2000):
-        random.shuffle(pessoas)
-        valido = True
-        pares = {}
+    # primeira fase: detectar números
+    numeros = [p for p in pessoas if any(ch.isdigit() for ch in p)]
 
-        for dador, recetor in zip(pessoas, pessoas[1:] + pessoas[:1]):
-            if recetor in proibidos[dador]:
-                valido = False
-                break
-            pares[dador] = recetor
+    if numeros:
+        return {
+            "mensagem": (
+                "Foram detetados números nos nomes: "
+                + ", ".join(numeros)
+                + ". Cada um receberá uma mensagem individual."
+            )
+        }
 
-        if valido:
-            break
+    # segunda fase: sortear
+    sorteado = pessoas[:]
+    random.shuffle(sorteado)
 
-    if not valido:
-        return {"resultado": "Erro: impossível sortear com estas casas."}
+    pares = {pessoas[i]: sorteado[i] for i in range(len(pessoas))}
 
-    saida = []
-    numeros_detectados = False
-
-    for d, r in pares.items():
-        saida.append(f"{d} → {r}")
-        if is_phone(d):
-            numeros_detectados = True
-
-    avisos = ""
-    if numeros_detectados:
-        avisos = "Foram detetados números. Será enviada uma mensagem para cada um."
-
-    return {"resultado": "\n".join(saida), "avisos": avisos}
+    # Sem revelar quem recebeu quem → só mensagem final
+    return {
+        "mensagem": "Sorteio concluído. Mensagens enviadas individualmente."
+    }

@@ -1,78 +1,63 @@
-let casas = [];
-const casasDiv = document.getElementById("casas");
-const resultadoDiv = document.getElementById("resultado");
-const avisosDiv = document.getElementById("avisos");
-
-document.getElementById("addCasa").onclick = () => addCasa();
-
-function addCasa() {
-    const casa = { pessoas: [""] };
-    casas.push(casa);
-    render();
-}
+let casas = [
+    { nome: "Casa", pessoas: [""] }
+];
 
 function render() {
-    casasDiv.innerHTML = "";
+    const container = document.getElementById("casas");
+    container.innerHTML = "";
 
     casas.forEach((casa, idxCasa) => {
         const div = document.createElement("div");
         div.className = "casa";
 
-        const title = document.createElement("div");
-        title.className = "casa-title";
-        title.textContent = `Casa ${idxCasa + 1}`;
-        div.appendChild(title);
+        const h = document.createElement("h2");
+        h.textContent = casa.nome;
+        div.appendChild(h);
 
-        casa.pessoas.forEach((nome, idxPessoa) => {
-            const pDiv = document.createElement("div");
-            pDiv.className = "pessoa";
-
+        // Lista de pessoas
+        casa.pessoas.forEach((pessoa, idxPessoa) => {
             const input = document.createElement("input");
-            input.value = nome;
-            input.placeholder = "Pessoa / email / número";
-            input.oninput = () => updatePessoa(idxCasa, idxPessoa, input.value);
+            input.type = "text";
+            input.value = pessoa;
 
-            pDiv.appendChild(input);
-            div.appendChild(pDiv);
+            input.oninput = () => {
+                casas[idxCasa].pessoas[idxPessoa] = input.value.trim();
+            };
+
+            input.onblur = () => {
+                // Quando sair da caixa e for a última, cria nova
+                if (
+                    idxPessoa === casa.pessoas.length - 1 &&
+                    input.value.trim() !== ""
+                ) {
+                    casas[idxCasa].pessoas.push("");
+                    render();
+                }
+            };
+
+            div.appendChild(input);
         });
 
-        casasDiv.appendChild(div);
+        container.appendChild(div);
     });
-}
-
-function updatePessoa(idxCasa, idxPessoa, valor) {
-    const casa = casas[idxCasa];
-
-    if (valor.trim() === "") {
-        casa.pessoas.splice(idxPessoa, 1);
-    } else {
-        casa.pessoas[idxPessoa] = valor.trim();
-        // se for o último slot preenchido, cria novo slot
-        if (idxPessoa === casa.pessoas.length - 1) {
-            casa.pessoas.push("");
-        }
-    }
-
-    render();
 }
 
 document.getElementById("sortear").onclick = async () => {
-    resultadoDiv.textContent = "";
-    avisosDiv.textContent = "";
+    const output = document.getElementById("output");
+    output.textContent = "A sortear...";
 
-    const payload = { casas: casas.map(c => c.pessoas.filter(p => p.trim() !== "")) };
+    try {
+        const resp = await fetch("http://localhost:8000/api/sortear", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(casas)
+        });
 
-    const resp = await fetch("/api/sortear", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    });
-
-    const data = await resp.json();
-
-    resultadoDiv.textContent = data.resultado;
-
-    if (data.avisos) {
-        avisosDiv.innerHTML = `<strong>${data.avisos}</strong>`;
+        const data = await resp.json();
+        output.textContent = data.mensagem;
+    } catch (e) {
+        output.textContent = "Erro ao contactar o servidor.";
     }
 };
+
+render();

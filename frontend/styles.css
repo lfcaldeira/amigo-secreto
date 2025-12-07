@@ -1,34 +1,15 @@
 body {
     font-family: sans-serif;
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
+    margin: 20px;
 }
 
 .casa {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-}
-
-.casa-title {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.pessoa {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 5px;
+    margin-bottom: 30px;
 }
 
 input {
-    padding: 5px;
-    width: 250px;
-}
-
-button {
-    padding: 8px 15px;
-    margin-top: 10px;
+    display: block;
+    margin: 5px 0;
+    padding: 6px;
+    width: 300px;
 }
