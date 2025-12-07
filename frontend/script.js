@@ -52,6 +52,5 @@ const resultado = await response.json();
 const resDiv = document.getElementById("resultado");
 resDiv.innerHTML = "Resultado";
 for (const [quem, para] of Object.entries(resultado)) {
-	resDiv.innerHTML += <p>${quem} → ${para}</p>;
-}
+	resDiv.innerHTML += `<p>${quem} → ${para}</p>`;
 }
