@@ -12,3 +12,5 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
+    environment:
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
