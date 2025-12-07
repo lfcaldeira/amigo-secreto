@@ -89,7 +89,7 @@ async function sortear() {
 
         // Mostrar apenas mensagem de sucesso
         const resultadoDiv = document.getElementById("resultado");
-        resultadoDiv.innerHTML = `<h3>🎅 teste</h3>`;
+        resultadoDiv.innerHTML = `<h3>🎅 ${data.mensagem}</h3>`;
     } catch (err) {
         console.error(err);
         alert("Ocorreu um erro ao tentar sortear. Vê o console.");
