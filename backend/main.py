@@ -138,6 +138,7 @@ def sortear(request: SorteioRequest):
                 pessoa_obj = next(p for p in todos if p.email == pessoa_email)
                 html_email = gerar_email_html(pessoa_obj.nome, amigo_nome, familia)
                 enviar_email(destinatario=pessoa_obj.email, assunto="O teu Amigo Secreto 🎄", conteudo=html_email)
-            return {p.nome: a for p, a in sorteio.items()}
+            return {next(p.nome for p in todos if p.email == email): amigo_nome
+        for email, amigo_nome in sorteio.items()}
 
     return {"error": "Não foi possível gerar um sorteio válido."}
