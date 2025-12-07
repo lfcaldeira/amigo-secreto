@@ -4,81 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Amigo Secreto Natal</title>
-<link rel="stylesheet" href="styles.css">
-<style>
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #fff8f0;
-    color: #333;
-    margin: 0;
-    padding: 0;
-}
-header {
-    background-color: #f44336;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-}
-main {
-    padding: 20px;
-    max-width: 900px;
-    margin: auto;
-}
-button {
-    padding: 8px 12px;
-    margin: 5px 0;
-    border: none;
-    border-radius: 5px;
-    background-color: #f44336;
-    color: white;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #d32f2f;
-}
-.casa {
-    border: 2px solid #f44336;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background-color: #fff0f0;
-}
-.pessoas {
-    margin-bottom: 10px;
-}
-.pessoa {
-    display: block;
-    margin: 5px 0;
-    padding: 6px;
-    width: 95%;
-}
-.resultado {
-    margin-top: 20px;
-    padding: 15px;
-    border: 2px dashed #f44336;
-    border-radius: 10px;
-    background-color: #fff0f0;
-}
-.ad-banner {
-    margin-top: 20px;
-    padding: 15px;
-    border: 2px solid #f44336;
-    border-radius: 10px;
-    text-align: center;
-    background-color: #ffeaea;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <header>
-  <h1>🎄 Amigo Secreto 2025 🎁</h1>
+  🎄 Amigo Secreto 2025 🎁
 </header>
 
 <main>
-  <label for="nome-familia">Nome da família / grupo:</label>
-  <input type="text" id="nome-familia" placeholder="Ex: Família Silva" />
+  <label for="nome-familia">Nome da Família/Grupo:</label>
+  <input type="text" id="nome-familia" placeholder="Ex: Família Silva" class="pessoa">
 
-  <button id="adicionar-casa">Adicionar Agregado</button>
+  <button id="adicionar-agregado">Adicionar Agregado</button>
   <button id="sortear">Sortear</button>
 
   <section id="casas"></section>
@@ -86,7 +24,7 @@ button:hover {
   <div id="resultado" class="resultado"></div>
 
   <aside class="ad-banner">
-    <p>🎅 Oferta especial de Natal: 20% em chocolates artesanais!</p>
+    🎅 Oferta especial de Natal: 20% em chocolates artesanais!
   </aside>
 </main>
 
