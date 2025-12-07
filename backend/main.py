@@ -3,6 +3,9 @@ from pydantic import BaseModel
 from typing import List
 import random
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 import re
 
 app = FastAPI()
