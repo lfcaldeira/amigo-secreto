@@ -126,7 +126,7 @@ def sortear(request: SorteioRequest):
             if not validos:
                 return None
             escolha = random.choice(validos)
-            resultado[pessoa] = resultado[pessoa.email] = next(p.nome for p in todos if p.email == escolha)
+            resultado[pessoa.email] = next(p.nome for p in todos if p.email == escolha)
             destinatarios_disponiveis.remove(escolha)
 
         return resultado
