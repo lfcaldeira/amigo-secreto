@@ -1,18 +1,14 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 30px;
+    margin: 20px;
+}
+
+input {
+    margin: 2px;
 }
 
 .casa {
+    margin-bottom: 10px;
+    padding: 5px;
     border: 1px solid #ccc;
-    padding: 15px;
-    margin-bottom: 15px;
-}
-
-.pessoa-input {
-    margin: 3px 0;
-}
-
-button {
-    margin-top: 10px;
 }

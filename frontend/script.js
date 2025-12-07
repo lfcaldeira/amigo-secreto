@@ -1,78 +1,51 @@
 const casasContainer = document.getElementById("casas-container");
-const addCasaBtn = document.getElementById("add-casa-btn");
-const sortearBtn = document.getElementById("sortear-btn");
-const output = document.getElementById("output");
+const resultado = document.getElementById("resultado");
 
-addCasa();
-
-// cria uma casa nova
-function addCasa() {
+document.getElementById("adicionar-casa").addEventListener("click", () => {
     const casaDiv = document.createElement("div");
     casaDiv.className = "casa";
 
-    const pessoasDiv = document.createElement("div");
-    pessoasDiv.className = "pessoas";
-
     const addPessoaBtn = document.createElement("button");
     addPessoaBtn.textContent = "Adicionar Pessoa";
-    addPessoaBtn.onclick = () => addPessoa(pessoasDiv);
 
-    casaDiv.appendChild(pessoasDiv);
-    casaDiv.appendChild(addPessoaBtn);
-
-    casasContainer.appendChild(casaDiv);
-
-    addPessoa(pessoasDiv);
-}
-
-// cria uma pessoa na casa
-function addPessoa(container) {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "Nome / email / número";
-    input.className = "pessoa-input";
-    container.appendChild(input);
-}
-
-addCasaBtn.onclick = () => addCasa();
-
-// envio do sorteio
-sortearBtn.onclick = async () => {
-    const casas = [];
-
-    document.querySelectorAll(".casa").forEach(casaEl => {
-        const pessoas = [];
-        casaEl.querySelectorAll(".pessoa-input").forEach(inp => {
-            if (inp.value.trim() !== "") {
-                pessoas.push(inp.value.trim());
-            }
-        });
-
-        if (pessoas.length > 0) {
-            casas.push({
-                nome: "Casa",
-                pessoas: pessoas
-            });
-        }
+    addPessoaBtn.addEventListener("click", () => {
+        const input = document.createElement("input");
+        input.placeholder = "Nome / Email / Número";
+        casaDiv.appendChild(input);
     });
 
-    output.textContent = "A contactar o servidor...";
+    casaDiv.appendChild(addPessoaBtn);
+    casasContainer.appendChild(casaDiv);
+});
+
+document.getElementById("sortear").addEventListener("click", async () => {
+    const casasDivs = document.querySelectorAll(".casa");
+    const casas = [];
+
+    casasDivs.forEach(casaDiv => {
+        const inputs = casaDiv.querySelectorAll("input");
+        const membros = [];
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            if(val) membros.push(val);
+        });
+        if(membros.length) casas.push({ membros });
+    });
+
+    if(casas.length === 0) {
+        resultado.textContent = "Adicione pelo menos uma pessoa!";
+        return;
+    }
 
     try {
-        const response = await fetch("/api/sortear", {
+        const resp = await fetch("http://backend:8000/api/sortear", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(casas)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ casas })
         });
-
-        if (!response.ok) {
-            throw new Error("Erro do servidor");
-        }
-
-        const data = await response.json();
-        output.textContent = data.mensagem;
-
-    } catch (e) {
-        output.textContent = "Erro ao contactar o servidor.";
+        const data = await resp.json();
+        resultado.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+        resultado.textContent = "Erro ao contactar o servidor.";
     }
-};
+});
