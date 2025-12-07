@@ -1,16 +1,12 @@
-version: "3.9"
-
 services:
-  backend:
-    build: ./backend
-    container_name: amigo-backend
-    ports:
-      - "8000:8000"
-
   frontend:
     build: ./frontend
-    container_name: amigo-frontend
     ports:
       - "8080:80"
     depends_on:
       - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
