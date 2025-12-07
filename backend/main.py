@@ -30,6 +30,10 @@ class Pessoa(BaseModel):
 class Casas(BaseModel):
     casas: List[List[Pessoa]]
 
+class SorteioRequest(BaseModel):
+    familia: str
+    casas: List[List[Pessoa]]
+    
 # Função para enviar email
 def enviar_email(destinatario: str, assunto: str, conteudo: str):
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
