@@ -1,56 +1,72 @@
-let casas = [];
+document.addEventListener("DOMContentLoaded", () => {
+  const casasContainer = document.getElementById("casas-container");
+  const addCasaBtn = document.getElementById("add-casa");
+  const sortearBtn = document.getElementById("sortear");
+  const resultadoDiv = document.getElementById("resultado");
 
-function adicionarCasa() {
-	const casa = [];
-	casas.push(casa);
-	renderizarCasas();
-}
+  // Adiciona uma nova casa
+  addCasaBtn.addEventListener("click", () => {
+    const casaDiv = document.createElement("div");
+    casaDiv.className = "casa";
+    casaDiv.innerHTML = `
+      <strong>Casa</strong>
+      <div class="pessoas-container"></div>
+      <button type="button" class="add-pessoa">Adicionar Pessoa</button>
+    `;
+    casasContainer.appendChild(casaDiv);
 
-function adicionarPessoa(casaIdx) {
-	const nome = prompt("Nome da pessoa:");
-	if (!nome) return;
-	if (casas.some(c => c.includes(nome))) {
-		alert("Nome já existe!");
-		return;
-	}
-	casas[casaIdx].push(nome);
-	renderizarCasas();
-}
+    const addPessoaBtn = casaDiv.querySelector(".add-pessoa");
+    const pessoasContainer = casaDiv.querySelector(".pessoas-container");
 
-function renderizarCasas() {
-	const container = document.getElementById("casas-container");
-	container.innerHTML = "";
-	casas.forEach((casa, idx) => {
-			const div = document.createElement("div");
-			div.className = "casa";
-			div.innerHTML = '<strong>Casa ' + (idx + 1) + '</strong>';
-			casa.forEach(pessoa => {
-					const span = document.createElement("span");
-					span.className = "pessoa";
-					span.textContent = pessoa;
-					div.appendChild(span);
-					});
-			const btn = document.createElement("button");
-			btn.textContent = "Adicionar Pessoa";
-			btn.onclick = () => adicionarPessoa(idx);
-			div.appendChild(btn);
-			container.appendChild(div);
-			});
-}
+    addPessoaBtn.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Nome ou email";
+      pessoasContainer.appendChild(input);
+    });
+  });
 
-async function sortear() {
-	const response = await fetch("/api/sortear", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ casas })
+  // Função para enviar dados para o backend
+  sortearBtn.addEventListener("click", async () => {
+    const casas = [];
+    const casasDivs = document.querySelectorAll(".casa");
+
+    casasDivs.forEach(casaDiv => {
+      const pessoas = [];
+      casaDiv.querySelectorAll("input").forEach(input => {
+        const val = input.value.trim();
+        if (val) pessoas.push(val);
+      });
+      if (pessoas.length) casas.push(pessoas);
+    });
+
+    // Limpa o output anterior
+    resultadoDiv.innerHTML = "";
+
+    try {
+      const response = await fetch("http://localhost:8000/sortear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ casas })
+      });
+
+      if (!response.ok) {
+        resultadoDiv.innerHTML = `<p>Erro ao contactar o servidor: ${response.status}</p>`;
+        return;
+      }
+
+      const resultado = await response.json();
+      mostrarResultado(resultado);
+
+    } catch (err) {
+      resultadoDiv.innerHTML = `<p>Erro de conexão: ${err.message}</p>`;
+    }
+  });
+
+  // Função para mostrar resultado
+  function mostrarResultado(resultado) {
+    for (const [quem, para] of Object.entries(resultado)) {
+      resultadoDiv.innerHTML += `<p>${quem} → ${para}</p>`;
+    }
+  }
 });
-if (!response.ok) {
-	alert("Erro ao contactar o servidor.");
-	return;
-}
-const resultado = await response.json();
-const resDiv = document.getElementById("resultado");
-resDiv.innerHTML = "Resultado";
-for (const [quem, para] of Object.entries(resultado)) {
-	resDiv.innerHTML += `<p>${quem} → ${para}</p>`;
-}
