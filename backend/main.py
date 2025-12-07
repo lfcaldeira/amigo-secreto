@@ -1,8 +1,22 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "http://192.168.1.123:8080",  # substitui pelo IP da máquina a servir o frontend
+    "http://backend:8080",      # opcional, se testares local
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Casas(BaseModel):
     casas: List[List[str]]
