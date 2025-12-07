@@ -1,113 +1,98 @@
-// script.js
-
-let casas = []; // Lista de agregados
-let casaAtual = null; // Agregado atual
-
-const nomeFamiliaInput = document.getElementById("nome-familia");
-const casasSection = document.getElementById("casas");
 const adicionarAgregadoBtn = document.getElementById("adicionar-agregado");
 const sortearBtn = document.getElementById("sortear");
+const casasContainer = document.getElementById("casas");
+const nomeFamiliaInput = document.getElementById("nome-familia");
 
-adicionarAgregadoBtn.addEventListener("click", () => {
-    const agregado = { pessoas: [] };
-    casas.push(agregado);
-    casaAtual = agregado;
-    renderCasas();
-});
+let casas = [];
 
-function renderCasas() {
-    casasSection.innerHTML = "";
-    casas.forEach((casa, index) => {
-        const casaDiv = document.createElement("div");
-        casaDiv.classList.add("casa");
-        casaDiv.innerHTML = `<h4>Agregado ${index + 1}</h4>`;
+// Função para criar um novo agregado
+function criarAgregado() {
+    const casaDiv = document.createElement("div");
+    casaDiv.classList.add("casa");
 
-        casa.pessoas.forEach((pessoa, pIndex) => {
-            const pDiv = document.createElement("div");
-            pDiv.textContent = `${pessoa.nome} (${pessoa.email})`;
-            casaDiv.appendChild(pDiv);
-        });
+    const pessoasDiv = document.createElement("div");
+    pessoasDiv.classList.add("pessoas");
+
+    // Botão para adicionar pessoa dentro do agregado
+    const adicionarPessoaBtn = document.createElement("button");
+    adicionarPessoaBtn.textContent = "Adicionar Pessoa";
+
+    adicionarPessoaBtn.addEventListener("click", () => {
+        const pessoaDiv = document.createElement("div");
 
         const nomeInput = document.createElement("input");
-        nomeInput.placeholder = "Nome da pessoa";
+        nomeInput.type = "text";
+        nomeInput.placeholder = "Nome";
         nomeInput.classList.add("pessoa");
 
         const emailInput = document.createElement("input");
-        emailInput.placeholder = "Email da pessoa";
+        emailInput.type = "email";
+        emailInput.placeholder = "Email";
         emailInput.classList.add("pessoa");
 
-        const addPessoaBtn = document.createElement("button");
-        addPessoaBtn.textContent = "Adicionar Pessoa";
-        addPessoaBtn.addEventListener("click", () => {
-            const nome = nomeInput.value.trim();
-            const email = emailInput.value.trim();
-            if (!nome || !email) {
-                alert("Por favor preencha nome e email da pessoa!");
-                return;
-            }
-            casa.pessoas.push({ nome, email });
-            nomeInput.value = "";
-            emailInput.value = "";
-            renderCasas();
-        });
+        pessoaDiv.appendChild(nomeInput);
+        pessoaDiv.appendChild(emailInput);
+        pessoasDiv.appendChild(pessoaDiv);
 
-        casaDiv.appendChild(nomeInput);
-        casaDiv.appendChild(emailInput);
-        casaDiv.appendChild(addPessoaBtn);
-
-        casasSection.appendChild(casaDiv);
+        // Mantemos referência das pessoas no agregado
+        if (!casaDiv.pessoas) casaDiv.pessoas = [];
+        casaDiv.pessoas.push({ nomeInput, emailInput });
     });
+
+    casaDiv.appendChild(pessoasDiv);
+    casaDiv.appendChild(adicionarPessoaBtn);
+
+    casasContainer.appendChild(casaDiv);
+    casas.push(casaDiv);
 }
 
-sortearBtn.addEventListener("click", async () => {
-    const familia = nomeFamiliaInput.value.trim();
-    if (!familia) {
-        alert("Por favor insira o nome da família!");
-        return;
-    }
-
-    if (casas.length === 0) {
-        alert("Adicione pelo menos um agregado com pessoas!");
-        return;
-    }
-
-    // Validar se cada agregado tem pelo menos uma pessoa
-    for (const casa of casas) {
-        if (!casa.pessoas.length) {
-            alert("Cada agregado deve ter pelo menos uma pessoa!");
-            return;
-        }
-    }
-
-    const payload = { familia, casas };
-    
-    try {
-        const response = await fetch("http://192.168.1.123:8000/sortear", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const data = await response.json();
-            alert(`Erro no backend: ${JSON.stringify(data)}`);
-            return;
-        }
-
-        const resultado = await response.json();
-        mostrarResultado(resultado, familia);
-    } catch (error) {
-        console.error("Erro ao comunicar com o backend:", error);
-        alert("Erro ao comunicar com o backend. Veja o console para mais detalhes.");
-    }
-});
-
+// Função para mostrar o resultado
 function mostrarResultado(resultado, familia) {
     const resultadoDiv = document.getElementById("resultado");
     resultadoDiv.innerHTML = `<h3>🎅 Resultado do Amigo Secreto da família ${familia} 🎁</h3>`;
+
     for (const [nome, amigo] of Object.entries(resultado)) {
         const p = document.createElement("p");
         p.textContent = `Olá ${nome}, foste selecionado para dar uma prenda a ${amigo}!`;
         resultadoDiv.appendChild(p);
     }
 }
+
+// Função para sortear
+async function sortear() {
+    const nomeFamilia = nomeFamiliaInput.value.trim();
+    if (!nomeFamilia) {
+        alert("Por favor, insere o nome da família.");
+        return;
+    }
+
+    // Criar payload para enviar ao backend
+    const payload = {
+        familia: nomeFamilia,
+        casas: casas.map(c => 
+            c.pessoas.map(p => ({
+                nome: p.nomeInput.value.trim(),
+                email: p.emailInput.value.trim()
+            }))
+        )
+    };
+
+    try {
+        const res = await fetch("http://192.168.1.123:8000/sortear", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("Erro ao sortear");
+
+        const resultado = await res.json();
+        mostrarResultado(resultado, nomeFamilia);
+    } catch (err) {
+        console.error(err);
+        alert("Ocorreu um erro ao tentar sortear. Vê o console.");
+    }
+}
+
+adicionarAgregadoBtn.addEventListener("click", criarAgregado);
+sortearBtn.addEventListener("click", sortear);
