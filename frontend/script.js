@@ -34,7 +34,6 @@ function criarAgregado() {
         pessoaDiv.appendChild(emailInput);
         pessoasDiv.appendChild(pessoaDiv);
 
-        // Mantemos referência das pessoas no agregado
         if (!casaDiv.pessoas) casaDiv.pessoas = [];
         casaDiv.pessoas.push({ nomeInput, emailInput });
     });
@@ -46,6 +45,12 @@ function criarAgregado() {
     casas.push(casaDiv);
 }
 
+// Validação de email
+function validarEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
 // Função para sortear
 async function sortear() {
     const nomeFamilia = nomeFamiliaInput.value.trim();
@@ -54,7 +59,20 @@ async function sortear() {
         return;
     }
 
-    // Criar payload
+    // Verificar se todos os emails são válidos
+    for (const casa of casas) {
+        for (const p of casa.pessoas) {
+            if (!p.nomeInput.value.trim()) {
+                alert("Todos os nomes devem estar preenchidos.");
+                return;
+            }
+            if (!validarEmail(p.emailInput.value.trim())) {
+                alert(`Email inválido: ${p.emailInput.value.trim()}`);
+                return;
+            }
+        }
+    }
+
     const payload = {
         familia: nomeFamilia,
         casas: casas.map(c =>
@@ -76,7 +94,6 @@ async function sortear() {
 
         const data = await res.json();
 
-        // Mostrar apenas mensagem de sucesso
         const resultadoDiv = document.getElementById("resultado");
         resultadoDiv.innerHTML = `<h3>🎅 Sorteio da família ${nomeFamilia} concluído com sucesso! 🎁</h3>`;
     } catch (err) {
@@ -85,6 +102,5 @@ async function sortear() {
     }
 }
 
-// Ligar botões às funções
 adicionarAgregadoBtn.addEventListener("click", criarAgregado);
 sortearBtn.addEventListener("click", sortear);
