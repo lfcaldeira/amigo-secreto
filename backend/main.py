@@ -36,16 +36,19 @@ class SorteioRequest(BaseModel):
 
 # Função para enviar email
 def enviar_email(destinatario: str, assunto: str, conteudo: str):
-    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-    FROM_EMAIL = "friend@giftmatchwill.work"
-
-    message = Mail(
-        from_email=FROM_EMAIL,
-        to_emails=destinatario,
-        subject=assunto,
-        html_content=conteudo
-    )
     try:
+        with open(os.getenv("SENDGRID_API_KEY_FILE"), "r") as f:
+            SENDGRID_API_KEY = f.read().strip()
+    
+        FROM_EMAIL = "friend@giftmatchwill.work"
+
+        message = Mail(
+            from_email=FROM_EMAIL,
+            to_emails=destinatario,
+            subject=assunto,
+            html_content=conteudo
+        )
+        
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
         print(f"Email enviado para {destinatario}: {response.status_code}")

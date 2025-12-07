@@ -1,16 +1,48 @@
 services:
   frontend:
     build: ./frontend
-    ports:
-      - "8080:80"
     environment:
-      - API_URL=http://192.168.1.123:8000 
+      - API_URL=https://giftmatchwill.work/api  # URL pública do backend
     depends_on:
       - backend
+    restart: always
+    networks:
+      - webnet
 
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
     environment:
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_API_KEY_FILE=/run/secrets/sendgrid_api_key
+    secrets:
+      - sendgrid_api_key
+    restart: always
+    networks:
+      - webnet
+
+  reverse-proxy:
+    image: traefik:latest
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=teuemail@exemplo.com"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - webnet
+    restart: always
+
+secrets:
+  sendgrid_api_key:
+    file: ./secrets/sendgrid_api_key.txt
+
+networks:
+  webnet:
+    driver: bridge
