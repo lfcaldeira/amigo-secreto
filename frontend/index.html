@@ -1,30 +1,121 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amigo Secreto Natal</title>
+<title>Amigo Secreto Natal 🎄</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header>
   <h1>🎄 Amigo Secreto 2025 🎁</h1>
+  <p class="subtitulo">Partilha magia e alegria neste Natal!</p>
 </header>
 
 <main>
-  <button id="add-casa">Adicionar Casa</button>
-  <button id="sortear">Sortear</button>
+  <div class="botoes">
+    <button id="adicionar-agregado" class="btn-natal">➕ Adicionar Agregado</button>
+    <button id="sortear" class="btn-natal">🎅 Sortear</button>
+  </div>
+
   <section id="casas"></section>
 
   <div id="resultado" class="resultado"></div>
 
   <!-- Espaço para publicidade -->
   <aside class="ad-banner">
-    <p>🎅 Oferta especial de Natal: 20% em chocolates artesanais!</p>
+    <p>🎁 Oferta especial de Natal: 20% de desconto em chocolates artesanais!</p>
   </aside>
 </main>
 
-<script src="script.js"></script>
+<script>
+const API_URL = window.API_URL || "http://192.168.1.123:8000";
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("adicionar-agregado").addEventListener("click", adicionarAgregado);
+    document.getElementById("sortear").addEventListener("click", sortear);
+    adicionarAgregado();
+});
+
+function adicionarAgregado() {
+    const container = document.getElementById("casas");
+    const div = document.createElement("div");
+    div.classList.add("agregado");
+
+    const pessoasDiv = document.createElement("div");
+    pessoasDiv.classList.add("pessoas");
+
+    const btnAddPessoa = document.createElement("button");
+    btnAddPessoa.type = "button";
+    btnAddPessoa.textContent = "➕ Adicionar Pessoa";
+    btnAddPessoa.classList.add("btn-pessoa");
+    btnAddPessoa.addEventListener("click", () => adicionarPessoa(pessoasDiv));
+
+    div.appendChild(pessoasDiv);
+    div.appendChild(btnAddPessoa);
+    container.appendChild(div);
+
+    adicionarPessoa(pessoasDiv);
+}
+
+function adicionarPessoa(container) {
+    const div = document.createElement("div");
+    div.classList.add("pessoa-input");
+
+    const inputNome = document.createElement("input");
+    inputNome.placeholder = "Nome";
+    inputNome.type = "text";
+
+    const inputEmail = document.createElement("input");
+    inputEmail.placeholder = "Email";
+    inputEmail.type = "email";
+
+    div.appendChild(inputNome);
+    div.appendChild(inputEmail);
+    container.appendChild(div);
+}
+
+function coletarCasas() {
+    const agregados = document.querySelectorAll(".agregado");
+    const casas = [];
+    agregados.forEach(agregado => {
+        const pessoas = [];
+        agregado.querySelectorAll(".pessoa-input").forEach(div => {
+            const nome = div.querySelector("input[type=text]").value.trim();
+            const email = div.querySelector("input[type=email]").value.trim();
+            if (nome && email) pessoas.push({nome, email});
+        });
+        if (pessoas.length) casas.push(pessoas);
+    });
+    return casas;
+}
+
+async function sortear() {
+    const casas = coletarCasas();
+    if (!casas.length) { alert("Adicione pelo menos uma pessoa!"); return; }
+
+    try {
+        const resp = await fetch(`${API_URL}/sortear`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({casas})
+        });
+        const resultado = await resp.json();
+        mostrarResultado(resultado);
+    } catch(e) {
+        alert("Erro ao contactar o servidor: " + e.message);
+    }
+}
+
+function mostrarResultado(resultado) {
+    const resDiv = document.getElementById("resultado");
+    resDiv.innerHTML = "<h2>🎅 Resultado do Amigo Secreto 🎁</h2>";
+    for(const [quem, para] of Object.entries(resultado)){
+        const p = document.createElement("p");
+        p.innerHTML = `<strong>${quem}</strong> → ${para}`;
+        resDiv.appendChild(p);
+    }
+}
+</script>
 </body>
 </html>
