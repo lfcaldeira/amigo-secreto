@@ -1,3 +1,55 @@
-body { font-family: sans-serif; margin: 20px; }
-.casa { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-.pessoa { margin-right: 5px; }
+/* styles.css */
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(to bottom, #ffe6e6, #fff);
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #c40000;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+button {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #008000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #005900;
+}
+
+.casa {
+  border: 2px solid #c40000;
+  border-radius: 5px;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background-color: #fff8f0;
+}
+
+.resultado {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fffbf0;
+  border: 1px dashed #c40000;
+}
+
+.ad-banner {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #fff3f3;
+  border: 1px solid #c40000;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  color: #c40000;
+}

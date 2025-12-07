@@ -1,21 +1,30 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <title>Amigo Secreto</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amigo Secreto Natal</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Amigo Secreto</h1>
-    <div id="casas"></div>
-    <button id="add-casa">Adicionar Casa</button>
-    <button id="sortear">Sortear</button>
+<header>
+  <h1>🎄 Amigo Secreto 2025 🎁</h1>
+</header>
 
-    <h2>Resultado</h2>
-    <pre id="resultado"></pre>
-<script>
-  window.API_URL = "http://192.168.1.123:8000";
-</script>
+<main>
+  <section id="casas"></section>
+  <button id="add-casa">Adicionar Casa</button>
+  <button id="sortear">Sortear</button>
+
+  <div id="resultado" class="resultado"></div>
+
+  <!-- Espaço para publicidade -->
+  <aside class="ad-banner">
+    <p>🎅 Oferta especial de Natal: 20% em chocolates artesanais!</p>
+  </aside>
+</main>
+
 <script src="script.js"></script>
 </body>
 </html>
