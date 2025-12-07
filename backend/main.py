@@ -134,7 +134,8 @@ def sortear(request: SorteioRequest):
     for _ in range(1000):
         sorteio = gerar_sorteio()
         if sorteio:
-            for pessoa_obj, amigo_nome in sorteio.items():
+            for pessoa_email, amigo_nome in sorteio.items():
+                pessoa_obj = next(p for p in todos if p.email == pessoa_email)
                 html_email = gerar_email_html(pessoa_obj.nome, amigo_nome, familia)
                 enviar_email(destinatario=pessoa_obj.email, assunto="O teu Amigo Secreto 🎄", conteudo=html_email)
             return {p.nome: a for p, a in sorteio.items()}
