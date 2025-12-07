@@ -7,6 +7,7 @@ let casas = [];
 
 // Função para criar um novo agregado
 function criarAgregado() {
+    adicionarAgregadoBtn.addEventListener("click", criarAgregado);
     const casaDiv = document.createElement("div");
     casaDiv.classList.add("casa");
 
@@ -60,6 +61,7 @@ function mostrarResultado(resultado, familia) {
 
 // Função para sortear
 async function sortear() {
+    sortearBtn.addEventListener("click", sortear);
     const nomeFamilia = nomeFamiliaInput.value.trim();
     if (!nomeFamilia) {
         alert("Por favor, insere o nome da família.");
