@@ -1,81 +1,114 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
-import random, os, re
+from typing import List, Dict
+import random
 from fastapi.middleware.cors import CORSMiddleware
+import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import re
 
 app = FastAPI()
-origins = ["http://192.168.1.123:8080", "http://backend:8080"]
+
+origins = [
+    "http://192.168.1.123:8080",
+    "http://frontend:8080",
+]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
+class Pessoa(BaseModel):
+    nome: str
+    email: str
+
 class Casas(BaseModel):
-    casas: List[List[dict]]  # cada dict: {"nome":..., "email":...}
+    casas: List[List[Pessoa]]  # Cada casa é uma lista de pessoas
 
 def is_email(valor: str) -> bool:
-    return re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", valor) is not None
+    padrao = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+    return re.match(padrao, valor) is not None
 
 def enviar_email(destinatario: str, assunto: str, conteudo: str):
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
     FROM_EMAIL = "friend@giftmatchwill.work"
-    message = Mail(from_email=FROM_EMAIL, to_emails=destinatario, subject=assunto, html_content=conteudo)
+
+    message = Mail(
+        from_email=FROM_EMAIL,
+        to_emails=destinatario,
+        subject=assunto,
+        html_content=conteudo
+    )
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)
-        sg.send(message)
-        print(f"Email enviado para {destinatario}")
+        response = sg.send(message)
+        print(f"Email enviado para {destinatario}: {response.status_code}")
     except Exception as e:
         print(f"Erro ao enviar email para {destinatario}: {e}")
 
-def gerar_email_html(nome, grupo, amigo_secreto) -> str:
+def gerar_email_html(nome_pessoa: str, familia: str, amigo: str) -> str:
     return f"""
-    <html><body style="font-family:Arial; background:#fff8f0; color:#333; padding:20px;">
-        <div style="max-width:600px; margin:auto; background:#fff; border:2px solid #f44336; border-radius:10px; padding:30px; text-align:center;">
-            <h1 style="color:#f44336;">🎄 Amigo Secreto 🎁</h1>
-            <p>Olá <strong>{nome}</strong>! 👋</p>
-            <p>Foste adicionado ao amigo secreto feito pelo <strong>{grupo}</strong>.</p>
-            <p>Deverás dar a prenda a: <strong>{amigo_secreto}</strong> 🎁</p>
-            <p>Cria mais grupos aqui: <a href="http://192.168.1.123:8080" target="_blank">Amigo Secreto Natal</a></p>
-            <p>✨🎅🎁🎄✨</p>
-            <p style="font-size:12px; color:#999;">Este é um email automático.</p>
+    <!DOCTYPE html>
+    <html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <title>Amigo Secreto</title>
+        <style>
+            body {{ font-family: 'Arial', sans-serif; background-color: #fff8f0; color: #333; padding: 20px; }}
+            .container {{ max-width: 600px; margin: auto; background-color: #fff; border: 2px solid #f44336; border-radius: 10px; padding: 30px; text-align: center; }}
+            h1 {{ color: #f44336; }}
+            p {{ font-size: 16px; line-height: 1.5; }}
+            .emoji {{ font-size: 24px; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #999; }}
+            a {{ color: #f44336; text-decoration: none; font-weight: bold; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🎄 Amigo Secreto 🎁</h1>
+            <p>Olá <strong>{nome_pessoa}</strong>! 👋</p>
+            <p>Foste selecionado para o Amigo Secreto da família <strong>{familia}</strong>.</p>
+            <p>O teu amigo secreto é: <strong>{amigo}</strong></p>
+            <p>Prepara a tua prenda e divirta-te! ✨</p>
+            <p><a href="http://192.168.1.123:8080">Cria mais grupos de amigos secretos aqui</a></p>
+            <p class="emoji">🎅🎁🎄✨</p>
+            <p class="footer">Este é um email automático, não é necessário responder.</p>
         </div>
-    </body></html>
+    </body>
+    </html>
     """
 
 @app.post("/sortear")
 def sortear(casas: Casas):
     todos = [p for casa in casas.casas for p in casa]
-    pessoa_para_casa = {p["nome"]: [x["nome"] for x in casa] for casa in casas.casas for p in casa}
+    pessoa_para_casa = {p.nome: [x.nome for x in casa] for casa in casas.casas for p in casa}
+    pessoa_email = {p.nome: p.email for p in todos}
 
     def gerar_sorteio():
-        disponiveis = set(p["nome"] for p in todos)
+        destinatarios_disponiveis = set(p.nome for p in todos)
         resultado = {}
-        for p in todos:
-            nome = p["nome"]
-            validos = [d for d in disponiveis if d not in pessoa_para_casa[nome]]
+        for pessoa in pessoa_para_casa:
+            validos = [d for d in destinatarios_disponiveis if d not in pessoa_para_casa[pessoa] and d != pessoa]
             if not validos:
                 return None
             escolha = random.choice(validos)
-            resultado[nome] = next(x for x in todos if x["nome"] == escolha)
-            disponiveis.remove(escolha)
+            resultado[pessoa] = escolha
+            destinatarios_disponiveis.remove(escolha)
         return resultado
 
     for _ in range(1000):
         sorteio = gerar_sorteio()
         if sorteio:
+            # Envia emails
+            for remetente, destinatario in sorteio.items():
+                email = pessoa_email[remetente]
+                html = gerar_email_html(remetente, "Família X", destinatario)
+                enviar_email(email, "Foste selecionado para o Amigo Secreto! 🎄", html)
             return sorteio
 
     return {"error": "Não foi possível gerar um sorteio válido."}
-
-@app.post("/enviar_email")
-def enviar_email_endpoint(destinatario: str, nome: str, grupo: str, amigo_secreto: str):
-    html = gerar_email_html(nome, grupo, amigo_secreto)
-    enviar_email(destinatario, f"🎄 Teu Amigo Secreto!", html)
-    return {"status": "email enviado"}
