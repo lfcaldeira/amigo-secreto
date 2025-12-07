@@ -78,36 +78,42 @@ def adicionar_participante(nome: str, email: str, grupo: str):
 
 @app.post("/sortear")
 def sortear(casas: Casas):
-    # Flatten nomes para sorteio
-    todos = [p["nome"] for casa in casas.casas for p in casa]
+    # Flatten: lista de dicts {nome, email}
+    todos = [p for casa in casas.casas for p in casa]
 
-    # Mapear cada pessoa à sua casa
-    pessoa_para_casa = {p["nome"]: casa for casa in casas.casas for p in casa}
+    # Mapeia cada pessoa à sua casa
+    pessoa_para_casa = {id(p): casa for casa in casas.casas for p in casa}
 
     def gerar_sorteio():
-        destinatarios_disponiveis = set(todos)
+        destinatarios_disponiveis = todos.copy()
         resultado = {}
+
         for pessoa in todos:
-            validos = [d for d in destinatarios_disponiveis if d not in pessoa_para_casa[pessoa]]
+            # Excluir membros da mesma casa e a própria pessoa
+            validos = [d for d in destinatarios_disponiveis if d not in pessoa_para_casa[id(pessoa)]]
             if not validos:
                 return None
             escolha = random.choice(validos)
-            resultado[pessoa] = escolha
+            resultado[pessoa['nome']] = escolha['nome']  # ou podes usar email para enviar
             destinatarios_disponiveis.remove(escolha)
+
         return resultado
 
+    # Tenta gerar até conseguir
     for _ in range(1000):
         sorteio = gerar_sorteio()
         if sorteio:
-            # Enviar email do amigo secreto
-            for casa in casas.casas:
-                for p in casa:
-                    nome = p["nome"]
-                    email = p["email"]
-                    amigo = sorteio[nome]
-                    if is_email(email):
-                        html = gerar_email_sorteio(nome, amigo)
-                        enviar_email(email, "O teu Amigo Secreto 🎄", html)
+            # Aqui podes enviar emails
+            for pessoa in todos:
+                email_dest = pessoa['email']
+                nome_dest = pessoa['nome']
+                amigo = sorteio[nome_dest]
+                enviar_email(
+                    destinatario=email_dest,
+                    assunto="Amigo Secreto Natal 🎄",
+                    conteudo=f"Olá {nome_dest}! O teu amigo secreto é: {amigo} 🎁"
+                )
             return sorteio
 
     return {"error": "Não foi possível gerar um sorteio válido."}
+
