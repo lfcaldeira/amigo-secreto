@@ -4,41 +4,36 @@ import random
 
 app = FastAPI()
 
-class PessoaCasa(BaseModel):
+class Casa(BaseModel):
     nome: str
     pessoas: list[str]
 
-
 @app.post("/api/sortear")
-def sortear(casas: list[PessoaCasa]):
+def sortear(casas: list[Casa]):
     pessoas = []
 
     for casa in casas:
         for p in casa.pessoas:
-            if p.strip() != "":
-                pessoas.append(p.strip())
+            pessoas.append(p)
 
     if len(pessoas) < 2:
-        return {"mensagem": "É preciso pelo menos 2 pessoas."}
+        return {"mensagem": "É preciso pelo menos duas pessoas."}
 
-    # fase 1 – detectar números
-    numeros = [p for p in pessoas if any(ch.isdigit() for ch in p)]
-
+    # detectar se há números (telefones)
+    numeros = [p for p in pessoas if any(c.isdigit() for c in p)]
     if numeros:
         return {
-            "mensagem": (
-                "Foram detetados números nos nomes: "
+            "mensagem":
+                "Foram detetados números: "
                 + ", ".join(numeros)
-                + ". Cada um receberá uma mensagem individual."
-            )
+                + ". Serão enviadas mensagens individuais."
         }
 
-    # fase 2 – sortear
-    sorteado = pessoas[:]
-    random.shuffle(sorteado)
+    # sortear
+    shuffled = pessoas[:]
+    random.shuffle(shuffled)
 
-    pares = {pessoas[i]: sorteado[i] for i in range(len(pessoas))}
+    # pares (não retornados no frontend)
+    pares = {pessoas[i]: shuffled[i] for i in range(len(pessoas))}
 
-    return {
-        "mensagem": "Sorteio concluído. Mensagens enviadas individualmente."
-    }
+    return {"mensagem": "Sorteio concluído. Mensagens enviadas individualmente."}
