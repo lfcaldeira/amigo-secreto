@@ -23,6 +23,27 @@ app.add_middleware(
 class Casas(BaseModel):
     casas: List[List[str]]
 
+def enviar_email(destinatario: str, assunto: str, conteudo: str):
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail
+    import os
+
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")  
+    FROM_EMAIL = "friend@giftmatchwill.work"
+
+    message = Mail(
+        from_email=FROM_EMAIL,
+        to_emails=destinatario,
+        subject=assunto,
+        plain_text_content=conteudo
+    )
+    try:
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(f"Email enviado para {destinatario}: {response.status_code}")
+    except Exception as e:
+        print(f"Erro ao enviar email para {destinatario}: {e}")
+
 @app.post("/sortear")
 def sortear(casas: Casas):
     todos = [p for casa in casas.casas for p in casa]
