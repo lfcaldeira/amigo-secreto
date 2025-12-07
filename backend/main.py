@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List
 import random
 from fastapi.middleware.cors import CORSMiddleware
+import re
 
 app = FastAPI()
 
@@ -49,10 +50,15 @@ def sortear(casas: Casas):
         if sorteio:
             for remetente, destinatario in sorteio.items():
                 # aqui podes usar remetente como nome ou email real
-                enviar_email(destinatario=remetente, 
-                             assunto="Amigo Secreto", 
-                             conteudo=f"Recebeste para oferecer a: {destinatario}")
+                if is_email(remetente):
+                    enviar_email(destinatario=remetente, 
+                                 assunto="Amigo Secreto", 
+                                 conteudo=f"Recebeste para oferecer a: {destinatario}")
 
             return sorteio
 
     return {"error": "Não foi possível gerar um sorteio válido."}
+
+def is_email(valor: str) -> bool:
+    padrao = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+    return re.match(padrao, valor) is not None
