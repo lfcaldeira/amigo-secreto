@@ -23,7 +23,7 @@ function renderizarCasas() {
 	casas.forEach((casa, idx) => {
 			const div = document.createElement("div");
 			div.className = "casa";
-			div.innerHTML = <strong>Casa ${idx + 1}</strong> ;
+			div.innerHTML = '<strong>Casa '+ ${idx + 1} + '</strong>' ;
 			casa.forEach(pessoa => {
 					const span = document.createElement("span");
 					span.className = "pessoa";
