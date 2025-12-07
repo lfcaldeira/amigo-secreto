@@ -66,7 +66,6 @@ async function sortear() {
         return;
     }
 
-    // Criar payload para enviar ao backend
     const payload = {
         familia: nomeFamilia,
         casas: casas.map(c => 
@@ -86,13 +85,13 @@ async function sortear() {
 
         if (!res.ok) throw new Error("Erro ao sortear");
 
-        const resultado = await res.json();
-        mostrarResultado(resultado, nomeFamilia);
+        const data = await res.json();
+
+        // Mostrar apenas mensagem de sucesso
+        const resultadoDiv = document.getElementById("resultado");
+        resultadoDiv.innerHTML = `<h3>🎅 ${data.mensagem}</h3>`;
     } catch (err) {
         console.error(err);
         alert("Ocorreu um erro ao tentar sortear. Vê o console.");
     }
 }
-
-adicionarAgregadoBtn.addEventListener("click", criarAgregado);
-sortearBtn.addEventListener("click", sortear);
