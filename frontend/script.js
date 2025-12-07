@@ -7,7 +7,6 @@ let casas = [];
 
 // Função para criar um novo agregado
 function criarAgregado() {
-    adicionarAgregadoBtn.addEventListener("click", criarAgregado);
     const casaDiv = document.createElement("div");
     casaDiv.classList.add("casa");
 
@@ -47,30 +46,18 @@ function criarAgregado() {
     casas.push(casaDiv);
 }
 
-// Função para mostrar o resultado
-function mostrarResultado(resultado, familia) {
-    const resultadoDiv = document.getElementById("resultado");
-    resultadoDiv.innerHTML = `<h3>🎅 Resultado do Amigo Secreto da família ${familia} 🎁</h3>`;
-
-    for (const [nome, amigo] of Object.entries(resultado)) {
-        const p = document.createElement("p");
-        p.textContent = `Olá ${nome}, foste selecionado para dar uma prenda a ${amigo}!`;
-        resultadoDiv.appendChild(p);
-    }
-}
-
 // Função para sortear
 async function sortear() {
-    sortearBtn.addEventListener("click", sortear);
     const nomeFamilia = nomeFamiliaInput.value.trim();
     if (!nomeFamilia) {
         alert("Por favor, insere o nome da família.");
         return;
     }
 
+    // Criar payload
     const payload = {
         familia: nomeFamilia,
-        casas: casas.map(c => 
+        casas: casas.map(c =>
             c.pessoas.map(p => ({
                 nome: p.nomeInput.value.trim(),
                 email: p.emailInput.value.trim()
@@ -91,9 +78,13 @@ async function sortear() {
 
         // Mostrar apenas mensagem de sucesso
         const resultadoDiv = document.getElementById("resultado");
-        resultadoDiv.innerHTML = `<h3>🎅 ${data.mensagem}</h3>`;
+        resultadoDiv.innerHTML = `<h3>🎅 Sorteio da família ${nomeFamilia} concluído com sucesso! 🎁</h3>`;
     } catch (err) {
         console.error(err);
         alert("Ocorreu um erro ao tentar sortear. Vê o console.");
     }
 }
+
+// Ligar botões às funções
+adicionarAgregadoBtn.addEventListener("click", criarAgregado);
+sortearBtn.addEventListener("click", sortear);
