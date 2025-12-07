@@ -11,8 +11,7 @@ import re
 app = FastAPI()
 
 origins = [
-    "http://192.168.1.123:8080",
-    "http://backend:8080",
+    "http://192.168.1.123:8080",  # IP do frontend
 ]
 
 app.add_middleware(
@@ -23,19 +22,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Cada agregado é uma lista de dicionários {"nome": ..., "email": ...}
-class Casas(BaseModel):
-    casas: List[List[dict]]
+# ----------------- Modelos -----------------
+class Agregados(BaseModel):
+    agregados: List[List[dict]]  # cada participante: {"nome": str, "email": str}
 
-def enviar_email(destinatario: str, assunto: str, html_conteudo: str):
-    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+# ----------------- Utilitários -----------------
+def is_email(valor: str) -> bool:
+    padrao = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+    return re.match(padrao, valor) is not None
+
+def enviar_email(destinatario: str, assunto: str, conteudo: str):
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")  
     FROM_EMAIL = "friend@giftmatchwill.work"
 
     message = Mail(
         from_email=FROM_EMAIL,
         to_emails=destinatario,
         subject=assunto,
-        html_content=html_conteudo
+        plain_text_content=conteudo
     )
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)
@@ -44,76 +48,44 @@ def enviar_email(destinatario: str, assunto: str, html_conteudo: str):
     except Exception as e:
         print(f"Erro ao enviar email para {destinatario}: {e}")
 
-def gerar_email_adicao(nome, grupo) -> str:
-    return f"""
-    <div style='font-family: Arial, sans-serif; background-color: #fff8f0; padding: 20px; border-radius: 10px; text-align:center;'>
-        <h1>🎄 Amigo Secreto 🎁</h1>
-        <p>Olá <strong>{nome}</strong>! 👋</p>
-        <p>Foste adicionado ao grupo do Amigo Secreto do <strong>{grupo}</strong>.</p>
-        <p>Em breve receberás o nome do teu amigo secreto e poderás preparar a tua prenda!</p>
-        <p>✨🎅🎁🎄✨</p>
-    </div>
-    """
-
-def gerar_email_sorteio(nome, amigo) -> str:
-    return f"""
-    <div style='font-family: Arial, sans-serif; background-color: #fff8f0; padding: 20px; border-radius: 10px; text-align:center;'>
-        <h1>🎄 Amigo Secreto 🎁</h1>
-        <p>Olá <strong>{nome}</strong>! 👋</p>
-        <p>O teu amigo secreto é: <strong>{amigo}</strong> 🎁</p>
-        <p>Prepara a tua prenda e guarda segredo até ao grande dia!</p>
-        <p>✨🎅🎁🎄✨</p>
-    </div>
-    """
-
-def is_email(valor: str) -> bool:
-    padrao = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-    return re.match(padrao, valor) is not None
-
+# ----------------- Endpoints -----------------
 @app.post("/adicionar_participante")
 def adicionar_participante(nome: str, email: str, grupo: str):
-    html_email = gerar_email_adicao(nome, grupo)
-    enviar_email(destinatario=email, assunto=f"Foste adicionado ao grupo do Amigo Secreto! 🎄", html_conteudo=html_email)
+    conteudo = f"Olá {nome}! 🎄\nFoste adicionado ao grupo do Amigo Secreto do {grupo}.\nEm breve receberás o nome do teu amigo secreto!"
+    enviar_email(destinatario=email, assunto=f"Foste adicionado ao grupo do Amigo Secreto! 🎄", conteudo=conteudo)
     return {"status": "email enviado", "nome": nome, "grupo": grupo}
 
 @app.post("/sortear")
-def sortear(casas: Casas):
-    # Flatten: lista de dicts {nome, email}
-    todos = [p for casa in casas.casas for p in casa]
+def sortear(agregados: Agregados):
+    todos = [p for agregado in agregados.agregados for p in agregado]
+    resultado = {}
+    tentativas = 0
 
-    # Mapeia cada pessoa à sua casa
-    pessoa_para_casa = {id(p): casa for casa in casas.casas for p in casa}
+    while tentativas < 1000:
+        tentativas += 1
+        random.shuffle(todos)
+        valido = True
+        resultado.clear()
 
-    def gerar_sorteio():
-        destinatarios_disponiveis = todos.copy()
-        resultado = {}
-
-        for pessoa in todos:
-            # Excluir membros da mesma casa e a própria pessoa
-            validos = [d for d in destinatarios_disponiveis if d not in pessoa_para_casa[id(pessoa)]]
-            if not validos:
-                return None
-            escolha = random.choice(validos)
-            resultado[pessoa['nome']] = escolha['nome']  # ou podes usar email para enviar
-            destinatarios_disponiveis.remove(escolha)
-
-        return resultado
-
-    # Tenta gerar até conseguir
-    for _ in range(1000):
-        sorteio = gerar_sorteio()
-        if sorteio:
-            # Aqui podes enviar emails
-            for pessoa in todos:
-                email_dest = pessoa['email']
-                nome_dest = pessoa['nome']
-                amigo = sorteio[nome_dest]
+        for i, remetente in enumerate(todos):
+            destinatario = todos[(i + 1) % len(todos)]
+            # Ninguém pode receber alguém do mesmo agregado ou a si próprio
+            for agregado in agregados.agregados:
+                if remetente in agregado:
+                    if destinatario in agregado:
+                        valido = False
+                        break
+            if not valido:
+                break
+            resultado[remetente["nome"]] = destinatario["nome"]
+            # Enviar email se tiver email
+            if is_email(remetente.get("email", "")):
                 enviar_email(
-                    destinatario=email_dest,
-                    assunto="Amigo Secreto Natal 🎄",
-                    conteudo=f"Olá {nome_dest}! O teu amigo secreto é: {amigo} 🎁"
+                    destinatario=remetente["email"],
+                    assunto="🎄 Amigo Secreto 2025 🎁",
+                    conteudo=f"Olá {remetente['nome']}! O teu amigo secreto é: {destinatario['nome']} 🎁"
                 )
-            return sorteio
+        if valido:
+            return resultado
 
     return {"error": "Não foi possível gerar um sorteio válido."}
-

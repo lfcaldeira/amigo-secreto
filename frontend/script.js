@@ -1,116 +1,92 @@
-const API_URL = window.API_URL || "http://192.168.1.123:8000";
+const API_URL = "http://192.168.1.123:8000";
 
 document.addEventListener("DOMContentLoaded", () => {
-const adicionarCasaBtn = document.getElementById("adicionar-agregado");
-const sortearBtn = document.getElementById("sortear");
-
-
-adicionarCasaBtn.addEventListener("click", adicionarCasa);
-sortearBtn.addEventListener("click", sortear);
-
-// Inicializa com uma casa
-adicionarCasa();
-
-
+    document.getElementById("add-agregado").addEventListener("click", adicionarAgregado);
+    document.getElementById("sortear").addEventListener("click", sortear);
+    adicionarAgregado();
 });
 
-function adicionarCasa() {
-const casasContainer = document.getElementById("casas");
-if (!casasContainer) return;
+function adicionarAgregado() {
+    const container = document.getElementById("agregados");
+    const div = document.createElement("div");
+    div.classList.add("agregado");
 
+    const pessoasDiv = document.createElement("div");
+    pessoasDiv.classList.add("pessoas");
 
-const casaDiv = document.createElement("div");
-casaDiv.classList.add("casa");
+    const addPessoaBtn = document.createElement("button");
+    addPessoaBtn.type = "button";
+    addPessoaBtn.textContent = "Adicionar Participante";
+    addPessoaBtn.addEventListener("click", () => adicionarPessoa(pessoasDiv));
 
-const pessoasContainer = document.createElement("div");
-pessoasContainer.classList.add("pessoas");
+    div.appendChild(pessoasDiv);
+    div.appendChild(addPessoaBtn);
+    container.appendChild(div);
 
-const adicionarPessoaBtn = document.createElement("button");
-adicionarPessoaBtn.type = "button";
-adicionarPessoaBtn.textContent = "Adicionar Pessoa";
-adicionarPessoaBtn.addEventListener("click", () => adicionarPessoa(pessoasContainer));
-
-casaDiv.appendChild(pessoasContainer);
-casaDiv.appendChild(adicionarPessoaBtn);
-casasContainer.appendChild(casaDiv);
-
-adicionarPessoa(pessoasContainer);
-
-
+    adicionarPessoa(pessoasDiv);
 }
 
 function adicionarPessoa(container) {
-const input = document.createElement("input");
-input.type = "text";
-input.placeholder = "Nome ou Email";
-input.classList.add("pessoa");
-container.appendChild(input);
+    const nome = document.createElement("input");
+    nome.type = "text";
+    nome.placeholder = "Nome";
+    nome.classList.add("nome");
+
+    const email = document.createElement("input");
+    email.type = "email";
+    email.placeholder = "Email";
+    email.classList.add("email");
+
+    container.appendChild(nome);
+    container.appendChild(email);
 }
 
-function coletarCasas() {
-const casasDivs = document.querySelectorAll(".casa");
-const casas = [];
+function coletarAgregados() {
+    const agregadosDivs = document.querySelectorAll(".agregado");
+    const agregados = [];
 
-
-casasDivs.forEach(casaDiv => {
-    const pessoas = [];
-    casaDiv.querySelectorAll(".pessoa").forEach(input => {
-        const valor = input.value.trim();
-        if (valor) pessoas.push(valor);
+    agregadosDivs.forEach(div => {
+        const participantes = [];
+        const nomes = div.querySelectorAll(".nome");
+        const emails = div.querySelectorAll(".email");
+        nomes.forEach((input, idx) => {
+            if(input.value.trim()) {
+                participantes.push({ nome: input.value.trim(), email: emails[idx].value.trim() });
+            }
+        });
+        if(participantes.length) agregados.push(participantes);
     });
-    if (pessoas.length > 0) casas.push(pessoas);
-});
 
-return casas;
-
-
+    return agregados;
 }
 
 async function sortear() {
-const casas = coletarCasas();
-if (casas.length === 0) {
-alert("Adicione pelo menos uma pessoa antes de sortear.");
-return;
-}
+    const agregados = coletarAgregados();
+    if (agregados.length === 0) return alert("Adicione pelo menos um participante!");
 
+    try {
+        const resp = await fetch(`${API_URL}/sortear`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ agregados })
+        });
 
-try {
-    const resp = await fetch(`${API_URL}/sortear`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ casas })
-    });
+        if(!resp.ok) throw new Error(await resp.text());
 
-    if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(`Erro do servidor: ${resp.status} - ${text}`);
+        const resultado = await resp.json();
+        mostrarResultado(resultado);
+
+    } catch (e) {
+        alert("Erro: " + e.message);
     }
-
-    const resultado = await resp.json();
-    mostrarResultado(resultado);
-
-    // O envio de emails é feito no backend. Nenhuma chamada extra aqui.
-} catch (e) {
-    alert("Erro ao contactar o servidor: " + e.message);
-}
-
-
 }
 
 function mostrarResultado(resultado) {
-const resDiv = document.getElementById("resultado");
-if (!resDiv) return;
-resDiv.innerHTML = "";
-
-
-const titulo = document.createElement("h2");
-titulo.textContent = "🎅 Resultado do Amigo Secreto 🎁";
-resDiv.appendChild(titulo);
-
-for (const [quem, para] of Object.entries(resultado)) {
-    const p = document.createElement("p");
-    p.innerHTML = `<strong>${quem}</strong> → ${para}`;
-    resDiv.appendChild(p);
-}
-
+    const resDiv = document.getElementById("resultado");
+    resDiv.innerHTML = "<h2>🎅 Resultado do Amigo Secreto 🎁</h2>";
+    for (const [quem, para] of Object.entries(resultado)) {
+        const p = document.createElement("p");
+        p.innerHTML = `<strong>${quem}</strong> → ${para}`;
+        resDiv.appendChild(p);
+    }
 }
