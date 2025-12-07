@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultadoDiv.innerHTML = "";
 
     try {
-      const response = await fetch("http://localhost:8000/sortear", {
+      const response = await fetch("http://backend:8000/sortear", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ casas })
