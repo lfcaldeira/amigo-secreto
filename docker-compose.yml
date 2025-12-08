@@ -2,7 +2,7 @@ services:
   frontend:
     build: ./frontend
     environment:
-      - API_URL=https://giftmatchwill.work/api  # URL pública do backend
+      - API_URL=https://giftmatchwill.work/  # URL pública do backend
     depends_on:
       - backend
     restart: always
@@ -18,6 +18,8 @@ services:
     restart: always
     networks:
       - webnet
+    expose:
+      - 8000
 
   reverse-proxy:
     image: traefik:latest
