@@ -1,8 +1,10 @@
+version: "3.9"
+
 services:
   frontend:
     build: ./frontend
     environment:
-      - API_URL=https://giftmatchwill.work/
+      - API_URL=https://api.giftmatchwill.work/
     depends_on:
       - backend
     restart: always
@@ -10,11 +12,17 @@ services:
       - webnet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`giftmatchwill.work`)"
+
+      # HTTPS para domínio oficial
+      - "traefik.http.routers.frontend.rule=Host(`giftmatchwill.work`) || Host(`www.giftmatchwill.work`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=mytlschallenge"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-      # porta interna do nginx na tua imagem frontend → geralmente 80
+
+      # Acesso local pelo IP (HTTP)
+      - "traefik.http.routers.frontend-ip.rule=Host(`192.168.1.123`)"
+      - "traefik.http.routers.frontend-ip.entrypoints=web"
+      - "traefik.http.services.frontend-ip.loadbalancer.server.port=80"
 
   backend:
     build: ./backend
@@ -29,29 +37,45 @@ services:
       - "8000"
     labels:
       - "traefik.enable=true"
+
+      # HTTPS para API pública
       - "traefik.http.routers.backend.rule=Host(`api.giftmatchwill.work`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=mytlschallenge"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+      # Acesso local pelo IP em /api (HTTP)
+      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-ip.entrypoints=web"
+      - "traefik.http.services.backend-ip.loadbalancer.server.port=8000"
 
   reverse-proxy:
     image: traefik:latest
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+
+      # entrypoints HTTP + HTTPS
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+
+      # Let's Encrypt
       - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
       - "--certificatesresolvers.mytlschallenge.acme.email=teuemail@exemplo.com"
       - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+
     ports:
       - "80:80"
       - "443:443"
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
+
     networks:
       - webnet
+
     restart: always
 
 secrets:
