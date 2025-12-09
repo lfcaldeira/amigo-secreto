@@ -45,7 +45,7 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
       # Acesso local pelo IP em /api (HTTP)
-      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/`)"
       - "traefik.http.routers.backend-ip.entrypoints=web"
       - "traefik.http.services.backend-ip.loadbalancer.server.port=8000"
 
@@ -55,6 +55,10 @@ services:
       - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
+      - "--api.dashboard=true"
+      - "--api.debug=true"
+      - "--api.insecure=true"
+
 
       # entrypoints HTTP + HTTPS
       - "--entrypoints.web.address=:80"
