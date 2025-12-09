@@ -2,12 +2,19 @@ services:
   frontend:
     build: ./frontend
     environment:
-      - API_URL=https://giftmatchwill.work/  # URL pública do backend
+      - API_URL=https://giftmatchwill.work/
     depends_on:
       - backend
     restart: always
     networks:
       - webnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`giftmatchwill.work`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      # porta interna do nginx na tua imagem frontend → geralmente 80
 
   backend:
     build: ./backend
@@ -19,7 +26,13 @@ services:
     networks:
       - webnet
     expose:
-      - 8000
+      - "8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.giftmatchwill.work`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
   reverse-proxy:
     image: traefik:latest
