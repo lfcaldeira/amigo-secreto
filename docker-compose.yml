@@ -24,14 +24,6 @@ services:
       - "traefik.http.routers.frontend-ip.entrypoints=web"
       - "traefik.http.routers.frontend-ip.service=frontend-ip"
       - "traefik.http.services.frontend-ip.loadbalancer.server.port=80"
-  
-      # HTTPS IP local
-      - "traefik.http.routers.frontend-ip-https.rule=Host(`192.168.1.123`)"
-      - "traefik.http.routers.frontend-ip-https.entrypoints=websecure"
-      - "traefik.http.routers.frontend-ip-https.tls=true"
-      - "traefik.http.routers.frontend-ip-https.service=frontend-ip-https"
-      - "traefik.http.services.frontend-ip-https.loadbalancer.server.port=80"
-
 
   backend:
     build: ./backend
@@ -54,7 +46,7 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
       # Acesso local pelo IP em /api (HTTP)
-      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/`)"
+      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend-ip.entrypoints=web"
       - "traefik.http.services.backend-ip.loadbalancer.server.port=8000"
 
