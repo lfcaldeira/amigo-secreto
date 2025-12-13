@@ -19,11 +19,6 @@ services:
       - "traefik.http.routers.frontend.service=frontend"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
   
-      # HTTP IP local
-      - "traefik.http.routers.frontend-ip.rule=Host(`192.168.1.123`)"
-      - "traefik.http.routers.frontend-ip.entrypoints=web"
-      - "traefik.http.routers.frontend-ip.service=frontend-ip"
-      - "traefik.http.services.frontend-ip.loadbalancer.server.port=80"
 
   backend:
     build: ./backend
@@ -37,15 +32,15 @@ services:
     expose:
       - "8000"
     labels:
-      - "traefik.enable=true"
+      - traefik.enable=true
     
-      # HTTPS público
-      - "traefik.http.routers.backend.rule=Host(`api.giftmatchwill.work`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.backend.service=backend"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
-    
+      # HTTPS API pública
+      - traefik.http.routers.backend.rule=Host(`api.giftmatchwill.work`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls.certresolver=mytlschallenge
+      - traefik.http.services.backend.loadbalancer.server.port=8000
+
+
       # HTTP local (IP)
       - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend-ip.entrypoints=web"
