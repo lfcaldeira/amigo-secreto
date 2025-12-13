@@ -38,17 +38,20 @@ services:
       - "8000"
     labels:
       - "traefik.enable=true"
-
-      # HTTPS para API pública
+    
+      # HTTPS público
       - "traefik.http.routers.backend.rule=Host(`api.giftmatchwill.work`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.backend.service=backend"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-
-      # Acesso local pelo IP em /api (HTTP)
+    
+      # HTTP local (IP)
       - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend-ip.entrypoints=web"
+      - "traefik.http.routers.backend-ip.service=backend-ip"
       - "traefik.http.services.backend-ip.loadbalancer.server.port=8000"
+
 
   reverse-proxy:
     image: traefik:latest
