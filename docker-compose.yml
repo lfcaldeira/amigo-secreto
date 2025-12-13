@@ -12,13 +12,24 @@ services:
       - webnet
     labels:
       - "traefik.enable=true"
-  #   HTTPS domínio
+
+      # HTTPS domínio via Cloudflare DNS-01
       - "traefik.http.routers.frontend.rule=Host(`giftmatchwill.work`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.frontend.service=frontend"
+      - "traefik.http.routers.frontend.tls.certresolver=cloudflare"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
   
+      # HTTP IP local (opcional)
+      - "traefik.http.routers.frontend-ip.rule=Host(`192.168.1.123`)"
+      - "traefik.http.routers.frontend-ip.entrypoints=web"
+      - "traefik.http.services.frontend-ip.loadbalancer.server.port=80"
+
+      # HTTPS IP local (opcional, self-signed se necessário)
+      - "traefik.http.routers.frontend-ip-https.rule=Host(`192.168.1.123`)"
+      - "traefik.http.routers.frontend-ip-https.entrypoints=websecure"
+      - "traefik.http.routers.frontend-ip-https.tls=true"
+      - "traefik.http.services.frontend-ip-https.loadbalancer.server.port=80"
+
 
   backend:
     build: ./backend
@@ -33,41 +44,39 @@ services:
       - "8000"
     labels:
       - "traefik.enable=true"
-    
-      # HTTPS API pública
+
+      # HTTPS API via Cloudflare DNS-01
       - "traefik.http.routers.backend.rule=Host(`api.giftmatchwill.work`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.backend.service=backend"
+      - "traefik.http.routers.backend.tls.certresolver=cloudflare"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-    
-      # HTTP IP local
-      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`)"
-      - "traefik.http.routers.backend-ip.entrypoints=web"
-      - "traefik.http.routers.backend-ip.service=backend-ip"
-      - "traefik.http.services.backend-ip.loadbalancer.server.port=8000"
 
+      # HTTP local pelo IP
+      - "traefik.http.routers.backend-ip.rule=Host(`192.168.1.123`) && PathPrefix(`/`)"
+      - "traefik.http.routers.backend-ip.entrypoints=web"
+      - "traefik.http.services.backend-ip.loadbalancer.server.port=8000"
 
 
   reverse-proxy:
     image: traefik:latest
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}   # variável de ambiente com token Cloudflare
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
       - "--api.dashboard=true"
       - "--api.debug=true"
-      - "--api.insecure=true"
-
 
       # entrypoints HTTP + HTTPS
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
 
-      # Let's Encrypt
-      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
-      - "--certificatesresolvers.mytlschallenge.acme.email=teuemail@exemplo.com"
-      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+      # Let's Encrypt via Cloudflare DNS-01
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.cloudflare.acme.email=teuemail@exemplo.com"
+      - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json"
 
     ports:
       - "80:80"
