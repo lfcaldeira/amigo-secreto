@@ -52,16 +52,15 @@ services:
     image: traefik:latest
     environment:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    security_opt:
+      - no-new-privileges:true
     command:
-      - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
-      - "--api.dashboard=true"
-      - "--api.debug=true"
-
-      # entrypoints HTTP + HTTPS
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--providers.docker.network=webnet"
+      - "--api.dashboard=true"
 
       # Let's Encrypt via Cloudflare DNS-01
       - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
