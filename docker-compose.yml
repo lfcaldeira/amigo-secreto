@@ -60,8 +60,11 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--providers.docker.network=webnet"
+      
+      # Dashboard
       - "--api.dashboard=true"
-
+      - "--api.insecure=true"
+      
       # Let's Encrypt via Cloudflare DNS-01
       - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
