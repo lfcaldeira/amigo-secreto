@@ -66,8 +66,12 @@ services:
       # Let's Encrypt via Cloudflare DNS-01
       - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
-      - "--certificatesresolvers.cloudflare.acme.email=teuemail@exemplo.com"
+      - "--certificatesresolvers.cloudflare.acme.email=luis.caldeira@gmail.com"
       - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json"
+
+      # DEBUG
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
 
     ports:
       - "80:80"
