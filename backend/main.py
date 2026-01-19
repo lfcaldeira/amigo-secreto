@@ -12,6 +12,8 @@ app = FastAPI()
 origins = [
     "http://192.168.1.123:8080",
     "http://backend:8080",
+    "http://giftmatchwill.work",
+    "https://giftmatchwill.work",
 ]
 
 app.add_middleware(

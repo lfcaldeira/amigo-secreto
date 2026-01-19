@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: '/home/lfcaldeira/Code/amigo-secreto/k8s'  # caminho local para os manifests
+    repoURL: 'https://github.com/lfcaldeira/amigo-secreto'
     targetRevision: HEAD
-    path: '.'  # todos os manifests no diretório
+    path: 'k8s'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: default

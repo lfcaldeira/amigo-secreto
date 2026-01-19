@@ -4,11 +4,13 @@ const casasContainer = document.getElementById("casas");
 const nomeFamiliaInput = document.getElementById("nome-familia");
 
 let casas = [];
+const API_BASE = "/api";
 
 // Função para criar um novo agregado
 function criarAgregado() {
     const casaDiv = document.createElement("div");
     casaDiv.classList.add("casa");
+    casaDiv.pessoas = [];
 
     const pessoasDiv = document.createElement("div");
     pessoasDiv.classList.add("pessoas");
@@ -19,6 +21,7 @@ function criarAgregado() {
 
     adicionarPessoaBtn.addEventListener("click", () => {
         const pessoaDiv = document.createElement("div");
+        pessoaDiv.classList.add("pessoa-container");
 
         const nomeInput = document.createElement("input");
         nomeInput.type = "text";
@@ -33,8 +36,6 @@ function criarAgregado() {
         pessoaDiv.appendChild(nomeInput);
         pessoaDiv.appendChild(emailInput);
         pessoasDiv.appendChild(pessoaDiv);
-
-        if (!casaDiv.pessoas) casaDiv.pessoas = [];
         casaDiv.pessoas.push({ nomeInput, emailInput });
     });
 
@@ -59,8 +60,17 @@ async function sortear() {
         return;
     }
 
+    if (casas.length === 0) {
+        alert("Adiciona pelo menos um agregado.");
+        return;
+    }
+
     // Verificar se todos os emails são válidos
     for (const casa of casas) {
+        if (!casa.pessoas || casa.pessoas.length === 0) {
+            alert("Todos os agregados devem ter pelo menos uma pessoa.");
+            return;
+        }
         for (const p of casa.pessoas) {
             if (!p.nomeInput.value.trim()) {
                 alert("Todos os nomes devem estar preenchidos.");
@@ -84,7 +94,7 @@ async function sortear() {
     };
 
     try {
-        const res = await fetch("http://192.168.1.123:8000/sortear", {
+        const res = await fetch(`${API_BASE}/sortear`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)

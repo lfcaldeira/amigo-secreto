@@ -15,11 +15,20 @@ spec:
       containers:
       - name: backend
         image: amigo-secreto-backend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
         env:
-        - name: SENDGRID_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: sendgrid-secret
-              key: SENDGRID_API_KEY
+        - name: SENDGRID_API_KEY_FILE
+          value: /run/secrets/sendgrid_api_key
+        volumeMounts:
+        - name: sendgrid-secret
+          mountPath: /run/secrets
+          readOnly: true
+      volumes:
+      - name: sendgrid-secret
+        secret:
+          secretName: sendgrid-secret
+          items:
+          - key: SENDGRID_API_KEY
+            path: sendgrid_api_key
