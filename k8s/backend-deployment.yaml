@@ -20,10 +20,10 @@ spec:
         - containerPort: 8000
         env:
         - name: SENDGRID_API_KEY_FILE
-          value: /run/secrets/sendgrid_api_key
+          value: /etc/secrets/sendgrid_api_key
         volumeMounts:
         - name: sendgrid-secret
-          mountPath: /run/secrets
+          mountPath: /etc/secrets
           readOnly: true
       volumes:
       - name: sendgrid-secret
