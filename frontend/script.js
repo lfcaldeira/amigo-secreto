@@ -19,6 +19,14 @@ function criarAgregado() {
     const adicionarPessoaBtn = document.createElement("button");
     adicionarPessoaBtn.textContent = "Adicionar Pessoa";
 
+    const removerAgregadoBtn = document.createElement("button");
+    removerAgregadoBtn.textContent = "Remover Agregado";
+    removerAgregadoBtn.classList.add("btn-remover");
+    removerAgregadoBtn.addEventListener("click", () => {
+        casas = casas.filter(c => c !== casaDiv);
+        casaDiv.remove();
+    });
+
     adicionarPessoaBtn.addEventListener("click", () => {
         const pessoaDiv = document.createElement("div");
         pessoaDiv.classList.add("pessoa-container");
@@ -33,14 +41,24 @@ function criarAgregado() {
         emailInput.placeholder = "Email";
         emailInput.classList.add("pessoa");
 
+        const removerPessoaBtn = document.createElement("button");
+        removerPessoaBtn.textContent = "Remover";
+        removerPessoaBtn.classList.add("btn-remover");
+        removerPessoaBtn.addEventListener("click", () => {
+            casaDiv.pessoas = casaDiv.pessoas.filter(p => p.nomeInput !== nomeInput);
+            pessoaDiv.remove();
+        });
+
         pessoaDiv.appendChild(nomeInput);
         pessoaDiv.appendChild(emailInput);
+        pessoaDiv.appendChild(removerPessoaBtn);
         pessoasDiv.appendChild(pessoaDiv);
         casaDiv.pessoas.push({ nomeInput, emailInput });
     });
 
     casaDiv.appendChild(pessoasDiv);
     casaDiv.appendChild(adicionarPessoaBtn);
+    casaDiv.appendChild(removerAgregadoBtn);
 
     casasContainer.appendChild(casaDiv);
     casas.push(casaDiv);
