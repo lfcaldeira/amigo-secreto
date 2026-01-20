@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-  - host: argocd.giftmatchwill.work
+  - host: argocd.homelab
     http:
       paths:
       - path: /
